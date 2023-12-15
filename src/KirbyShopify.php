@@ -1,104 +1,80 @@
 <?php
+
 namespace KirbyShopify;
 
-use \Dotenv\Dotenv;
 use \PHPShopify\ShopifySDK;
-
-// require 'helpers.php';
-
-$dotenv = new \Dotenv\Dotenv(__DIR__ . str_repeat(DIRECTORY_SEPARATOR . '..', 1));
-$dotenv->load();
 
 class App
 {
     private static $config  = [];
     private static $shopify = null;
     public static $productsPage = null;
+    public static $products = null;
 
     public static function init()
     {
-
-        self::$config = [
+      self::$config = [
             'ApiKey'   => $_ENV['API_KEY'],
-            'Password' => $_ENV['API_PASSWORD'],
+            'Password' => $_ENV['ADMIN_API_TOKEN'],
             'ShopUrl'  => $_ENV['SHOP_URL'],
-            // 'AccessToken' => empty($_ENV['ACCESS_TOKEN']) ? null : $_ENV['ACCESS_TOKEN'],
-            // 'SharedSecret' => empty($_ENV['SHARED_SECRET']) ? null : $_ENV['SHARED_SECRET'],
-        ];
-
-        self::$shopify = new \PHPShopify\ShopifySDK(self::$config);
-        self::$productsPage = collection('kirby-shopify.productsPage');
-
+      ];
+      self::$shopify = new \PHPShopify\ShopifySDK(self::$config);
+      self::$productsPage = collection('kirby-shopify.productsPage');
+      self::$products = collection('kirby-shopify.products');
     }
 
     public static function clearCache()
     {
-
-        $shopifyApiCache = kirby()->cache('tristanb.kirby-shopify.api');
-        $shopifyApiCache->set('products', null);
-        $shopifyApiCache->set('collections', null);
-
+      $shopifyApiCache = kirby()->cache('tristanb.kirby-shopify.api');
+      $shopifyApiCache->set('products', null);
+      $shopifyApiCache->set('collections', null);
     }
 
     public static function clearProductsCache()
     {
-
-        $shopifyApiCache = kirby()->cache('tristanb.kirby-shopify.api');
-        $shopifyApiCache->set('products', null);
-
+      $shopifyApiCache = kirby()->cache('tristanb.kirby-shopify.api');
+      $shopifyApiCache->set('products', null);
     }
 
     public static function clearCollectionsCache()
     {
-
-        $shopifyApiCache = kirby()->cache('tristanb.kirby-shopify.api');
-        foreach (collection('kirby-shopify.collections') as $key => $c) {
-          $shopifyApiCache->set('collection-'.$c->shopifyID(), null);
-        }
-        $shopifyApiCache->set('collections', null);
-
+      $shopifyApiCache = kirby()->cache('tristanb.kirby-shopify.api');
+      foreach (collection('kirby-shopify.collections') as $key => $c) {
+            $shopifyApiCache->set('collection-'.$c->shopifyID(), null);
+      }
+      $shopifyApiCache->set('collections', null);
     }
 
     public static function clearKirbyCache()
     {
-
         kirby()->impersonate('kirby');
         kirby()->site()->homepage()->update();
-
     }
 
     public static function getProducts()
     {
-
         if (!self::$shopify) {
             \KirbyShopify\App::init();
         }
-
         $shopifyApiCache = kirby()->cache('tristanb.kirby-shopify.api');
-        $products        = $shopifyApiCache->get('products');
+        $products = $shopifyApiCache->get('products');
 
         if ($products === null) {
             $products      = [];
-            $productsCount = self::$shopify->Product->count(['published_status' => 'published', 'status' => 'active']);
-
+            $productsCount = self::$shopify->Product->count();
             if ($productsCount > 0) {
-
-                $products = self::$shopify->Product->get(['limit' => 250, 'published_status' => 'published', 'status' => 'active']);
-
+                $products = self::$shopify->Product->get(['limit' => 250]);
                 while (count($products) < $productsCount) {
                     $lastItem     = array_values(array_slice($products, -1))[0];
-                    $nextProducts = self::$shopify->Product->get(['limit' => 250, 'published_status' => 'published', 'status' => 'active', 'since_id' => $lastItem['id']]);
+                    $nextProducts = self::$shopify->Product->get(['limit' => 250, 'since_id' => $lastItem['id']]);
                     foreach ($nextProducts as $key => $product) {
                         $products[] = $product;
                     }
                 }
-
             }
             $shopifyApiCache->set('products', $products);
         }
-
         return $products;
-
     }
 
     public static function getProductsFromCollection($collectionId)
@@ -238,8 +214,8 @@ class App
     public static function verifyWebhook($data, $hmac_header)
     {
 
-        if ($_ENV['SHOPIFY_APP_SECRET']) {
-            $calculated_hmac = base64_encode(hash_hmac('sha256', $data, $_ENV['SHOPIFY_APP_SECRET'], true));
+        if ($_ENV['API_SECRET']) {
+            $calculated_hmac = base64_encode(hash_hmac('sha256', $data, $_ENV['API_SECRET'], true));
             return hash_equals($hmac_header, $calculated_hmac);
         }
 

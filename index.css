@@ -1,0 +1,10 @@
+
+p {
+    margin-bottom: var(--spacing-2);
+}
+.k-button-field-button {
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+

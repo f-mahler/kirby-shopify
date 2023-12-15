@@ -1,11 +1,64 @@
 title: Products
+
 options:
   delete: false
-  changeTemplate: false
-  changeStatus: true
-sections:
-  products:
-    headline: Products
-    type: pages
-    info: "{{ page.handle }}"
-    template: shopify.product
+  duplicate: false
+  template: false
+  status: false
+  move: false
+  url: false
+
+columns:
+  - width: 2/3
+    sections:
+      products:
+        headline: Products
+        type: pages
+        info: "CHF {{ page.shopifyPrice }}"
+        layout: cards
+        status: listed
+        image: 
+          query: page.coverimage.toFile
+          cover: true
+          back: lightgrey
+          ratio: 3/2
+        template: shopify.product
+  - width: 1/3
+    sections:
+      drafts:
+        headline: Drafts
+        type: pages
+        info: "CHF {{ page.shopifyPrice }}"
+        layout: list
+        sortable: false
+        status: unlisted
+        image: false
+        disabled: true
+        template: shopify.product
+      buttons:
+        type: fields
+        fields:
+          showmessage:
+            label: Show message
+            type: toggle
+            width: 1/4
+          message:
+            type: text
+            width: 1/2
+            help: "Message to display above add to cart button"
+            when:
+              showmessage: true
+          update:
+            type: button
+            icon: cart
+            width: 1/4
+            open: true
+            text: Shopify Admin
+            url: "/kirby-shopify/api/opendashboard"
+          reload:
+            type: button
+            icon: refresh
+            theme: info
+            text: Reload products
+            reload: true
+            url: "/kirby-shopify/api/cache/button"

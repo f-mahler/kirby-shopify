@@ -1,21 +1,22 @@
 {
-    "name": "tristantbg/kirby-shopify",
-    "description": "Display products on your own site and integrate the checkout process with your Shopify shop",
-    "type": "kirby-plugin",
-    "license": "MIT",
-    "version": "1.3.7",
-    "authors": [
-        {
-            "name": "Tristan Bagot",
-            "email": "hello@tristanbagot.com"
-        }
-    ],
-    "require": {
-        "getkirby/composer-installer": "^1.1",
-        "vlucas/phpdotenv": "^2.4",
-        "phpclassic/php-shopify": "^1.0"
-    },
-    "config": {
-        "optimize-autoloader": true
-    }
+      "name": "tristantbg/kirby-shopify",
+      "description": "Display products on your own site and integrate the checkout process with your Shopify shop",
+      "type": "kirby-plugin",
+      "license": "MIT",
+      "version": "1.4.0",
+      "authors": [
+            {
+                  "name": "Tristan Bagot",
+                  "email": "hello@tristanbagot.com"
+            }
+      ],
+      "require": {
+            "getkirby/composer-installer": "^1.2",
+            "phpclassic/php-shopify": "^1.2.9",
+            "vlucas/phpdotenv": "^5.5",
+            "spatie/ray": "^1.39"
+      },
+      "config": {
+            "optimize-autoloader": true
+      }
 }

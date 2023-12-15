@@ -68,9 +68,13 @@ use PHPShopify\Exception\SdkException;
 
 /**
  * @property-read AbandonedCheckout $AbandonedCheckout
+ * @property-read AccessScope $AccessScope
+ * @property-read ApiDeprecations $ApiDeprecations
  * @property-read ApplicationCharge $ApplicationCharge
+ * @property-read AssignedFulfillmentOrder $AssignedFulfillmentOrder
  * @property-read Blog $Blog
  * @property-read CarrierService $CarrierService
+ * @property-read Cart $Cart
  * @property-read Collect $Collect
  * @property-read Collection $Collection
  * @property-read Comment $Comment
@@ -83,8 +87,11 @@ use PHPShopify\Exception\SdkException;
  * @property-read DiscountCode $DiscountCode
  * @property-read DraftOrder $DraftOrder
  * @property-read Event $Event
+ * @property-read Fulfillment $Fulfillment
+ * @property-read FulfillmentOrder $FulfillmentOrder
  * @property-read FulfillmentService $FulfillmentService
  * @property-read GiftCard $GiftCard
+ * @property-read GiftCardAdjustment $GiftCardAdjustment
  * @property-read InventoryItem $InventoryItem
  * @property-read InventoryLevel $InventoryLevel
  * @property-read Location $Location
@@ -93,18 +100,18 @@ use PHPShopify\Exception\SdkException;
  * @property-read Order $Order
  * @property-read Page $Page
  * @property-read Policy $Policy
+ * @property-read PriceRule $PriceRule
  * @property-read Product $Product
  * @property-read ProductListing $ProductListing
  * @property-read ProductVariant $ProductVariant
- * @property-read PriceRule $PriceRule
  * @property-read RecurringApplicationCharge $RecurringApplicationCharge
  * @property-read Redirect $Redirect
  * @property-read Report $Report
  * @property-read ScriptTag $ScriptTag
  * @property-read ShippingZone $ShippingZone
  * @property-read Shop $Shop
- * @property-read SmartCollection $SmartCollection
  * @property-read ShopifyPayment $ShopifyPayment
+ * @property-read SmartCollection $SmartCollection
  * @property-read TenderTransaction $TenderTransaction
  * @property-read Theme $Theme
  * @property-read User $User
@@ -112,9 +119,13 @@ use PHPShopify\Exception\SdkException;
  * @property-read GraphQL $GraphQL
  *
  * @method AbandonedCheckout AbandonedCheckout(integer $id = null)
+ * @method AssignedFulfillmentOrder AssignedFulfillmentOrder(string $assignment_status = null, array $location_ids = null)
+ * @method AccessScope AccessScope()
+ * @method ApiDeprecations ApiDeprecations()
  * @method ApplicationCharge ApplicationCharge(integer $id = null)
  * @method Blog Blog(integer $id = null)
  * @method CarrierService CarrierService(integer $id = null)
+ * @method Cart Cart(string $cart_token = null)
  * @method Collect Collect(integer $id = null)
  * @method Collection Collection(integer $id = null)
  * @method Comment Comment(integer $id = null)
@@ -127,8 +138,11 @@ use PHPShopify\Exception\SdkException;
  * @method DraftOrder DraftOrder(integer $id = null)
  * @method DiscountCode DiscountCode(integer $id = null)
  * @method Event Event(integer $id = null)
+ * @method Fulfillment Fulfillment(integer $id = null)
  * @method FulfillmentService FulfillmentService(integer $id = null)
+ * @method FulfillmentOrder FulfillmentOrder(integer $id = null)
  * @method GiftCard GiftCard(integer $id = null)
+ * @method GiftCardAdjustment GiftCardAdjustment(integer $id = null)
  * @method InventoryItem InventoryItem(integer $id = null)
  * @method InventoryLevel InventoryLevel(integer $id = null)
  * @method Location Location(integer $id = null)
@@ -164,9 +178,13 @@ class ShopifySDK
      */
     protected $resources = array(
         'AbandonedCheckout',
+		'AssignedFulfillmentOrder',
+        'AccessScope',
+        'ApiDeprecations',
         'ApplicationCharge',
         'Blog',
         'CarrierService',
+        'Cart',
         'Collect',
         'Collection',
         'Comment',
@@ -179,7 +197,9 @@ class ShopifySDK
         'DiscountCode',
         'DraftOrder',
         'Event',
+        'Fulfillment',
         'FulfillmentService',
+        'FulfillmentOrder',
         'GiftCard',
         'InventoryItem',
         'InventoryLevel',
@@ -221,7 +241,7 @@ class ShopifySDK
     /**
      * @var string Default Shopify API version
      */
-    public static $defaultApiVersion = '2020-01';
+    public static $defaultApiVersion = '2023-07';
 
     /**
      * Shop / API configurations
@@ -244,6 +264,7 @@ class ShopifySDK
         'Dispute'           => 'ShopifyPayment',
         'Fulfillment'       => 'Order',
         'FulfillmentEvent'  => 'Fulfillment',
+        'GiftCardAdjustment'=> 'GiftCard',
         'OrderRisk'         => 'Order',
         'Payouts'           => 'ShopifyPayment',
         'ProductImage'      => 'Product',
@@ -348,6 +369,10 @@ class ShopifySDK
             static::$timeAllowedForEachApiCall = $config['AllowedTimePerCall'];
         }
 
+        if (isset($config['Curl']) && is_array($config['Curl'])) {
+            CurlRequest::config($config['Curl']);
+        }
+
         return new ShopifySDK;
     }
 
@@ -394,6 +419,28 @@ class ShopifySDK
      */
     public static function getApiUrl() {
         return self::$config['ApiUrl'];
+    }
+
+    /**
+     * Returns the appropriate URL for the host that should load the embedded app.
+     *
+     * @param string $host The host value received from Shopify
+     *
+     * @return string
+     */
+    public static function getEmbeddedAppUrl($host)
+    {
+        if (empty($host)) {
+            throw new SdkException("Host value cannot be empty");
+        }
+
+        $decodedHost = base64_decode($host, true);
+        if (!$decodedHost) {
+            throw new SdkException("Host was not a valid base64 string");
+        }
+
+        $apiKey = self::$config['ApiKey'];
+        return "https://$decodedHost/apps/$apiKey";
     }
 
     /**

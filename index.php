@@ -1,9 +1,8 @@
 <?php
 
 @include_once __DIR__ . '/vendor/autoload.php';
-
+Dotenv\Dotenv::createImmutable(__DIR__)->load();
 @include_once __DIR__ . '/src/KirbyShopify.php';
-
 @include_once __DIR__ . '/src/models/shopify.products.php';
 @include_once __DIR__ . '/src/models/shopify.product.php';
 @include_once __DIR__ . '/src/models/shopify.collections.php';
@@ -13,18 +12,62 @@ Kirby::plugin('tristanb/kirby-shopify', [
     'options' => [
       'cache.api' => true
     ],
+    'fields' => [
+      'button' => [
+          'props' => [
+              'label' => function (string $label = 'Button') {
+                  return $label;
+              },
+              'text' => function (string $text = 'Click here') {
+                  return $text;
+              },
+              'url' => function (string $url) {
+                  return $url;
+              },
+              'theme' => function (string $theme = null) {
+                  return $theme;
+              },
+              'icon' => function (string $icon = 'refresh') {
+                  return $icon;
+              },
+              'open' => function (bool $open = false) {
+                  return $open;
+              },
+              'reload' => function (bool $reload = false) {
+                  return $reload;
+              },
+              'help' => function (string $help = null) {
+                  return $help;
+              },
+          ],
+          'computed' => [
+              'text' => function () {
+                  if( $text = $this->text ){
+                      $text = $this->model()->toSafeString($text);
+                      return $text;
+                  }
+              },
+              'url' => function () {
+                  if( $url = $this->url ){
+                      $url = $this->model()->toSafeString($url);
+                      return $url;
+                  }
+              }
+          ],
+      ]
+  ],
     'collections' => [
       'kirby-shopify.productsPage' => function ($site) {
-        return $site->pages()->filterBy('intendedTemplate', 'shopify.products')->first();
+            return $site->pages()->filterBy('intendedTemplate', 'shopify.products')->first();
       },
       'kirby-shopify.products' => function ($site) {
-        return collection('kirby-shopify.productsPage')->children();
+            return collection('kirby-shopify.productsPage')->children();
       },
       'kirby-shopify.collectionsPage' => function ($site) {
-        return $site->pages()->filterBy('intendedTemplate', 'shopify.collections')->first();
+            return $site->pages()->filterBy('intendedTemplate', 'shopify.collections')->first();
       },
       'kirby-shopify.collections' => function ($site) {
-        return collection('kirby-shopify.collectionsPage')->children();
+            return collection('kirby-shopify.collectionsPage')->children();
       }
     ],
     'pageModels' => [
@@ -81,13 +124,33 @@ Kirby::plugin('tristanb/kirby-shopify', [
     ],
     'routes' => [
       [
+            'pattern' => 'kirby-shopify/api/opendashboard',
+            'method' => 'GET',
+            'action' => function() {
+                  $shopurl = $_ENV['SHOP_URL'];
+                  $shopid = explode('.', $shopurl)[0];
+                  $newurl = 'https://admin.shopify.com/store/' . $shopid;
+                  go($newurl);
+            }
+      ],
+      [
+            'pattern' => 'kirby-shopify/api/cache/button',
+            'method' => 'GET',
+            'action'  => function () {
+                  if(kirby()->user()) {
+                        \KirbyShopify\App::clearCache();
+                        \KirbyShopify\App::clearKirbyCache();
+                        return Response::json(["status" => "success", "code" => 200, "message" => "Cache cleared"]);
+                  }
+            }
+      ],
+      [
         'pattern' => 'kirby-shopify/api/cache/clear',
         'method' => 'POST',
         'action'  => function () {
           $hmac_header = $_SERVER['HTTP_X_SHOPIFY_HMAC_SHA256'];
           $data = file_get_contents('php://input');
           $verified = \KirbyShopify\App::verifyWebhook($data, $hmac_header);
-
           if ($verified) {
             \KirbyShopify\App::clearCache();
             \KirbyShopify\App::clearKirbyCache();
@@ -131,5 +194,8 @@ Kirby::plugin('tristanb/kirby-shopify', [
           }
         }
       ]
-    ]
+      ],
+      'components' => [
+            'file::version'       => include __DIR__ . '/src/components/previewImage.php'
+      ]
 ]);

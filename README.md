@@ -1,7 +1,5 @@
 # Kirby 3 Shopify Plugin
 
-****
-
 ## Installation
 
 ### Download
@@ -27,16 +25,10 @@ Add manually a page called `products` with the template `shopify.products` in th
 Add manually a page called `collections` with the template `shopify.collections` in the content folder. (like shown in "example")
 
 ```
-API_KEY= 1
-API_PASSWORD= 2
-SHOPIFY_APP_SECRET= 3
-ACCESS_TOKEN= 4 (Useless)
+API_KEY=<XXXX>
+API_SECRET=<XXXX>
+SHOPIFY_APP_SECRET=<XXXX>
 ```
-
-<img width="565" alt="Capture d’écran 2023-05-15 à 16 43 12" src="https://github.com/tristantbg/kirby-shopify/assets/4832038/95d308d0-d201-4628-9f64-d236e3207e49">
-
-![kirby-shopify screen-3](https://user-images.githubusercontent.com/4832038/136786285-67ada112-52e8-45d5-b9ff-9724a8aca172.png)
-
 
 ## Make Shopify update your Kirby products list
 

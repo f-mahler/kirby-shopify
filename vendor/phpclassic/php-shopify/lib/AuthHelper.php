@@ -28,8 +28,11 @@ class AuthHelper
         else {
             $protocol = 'http';
         }
+        
+        $url = $protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        $url = false !== ($qsPos = strpos($url, '?')) ? substr($url, 0, $qsPos) : $url; // remove query params
 
-        return "$protocol://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        return $url;
     }
 
     /**
@@ -169,6 +172,10 @@ class AuthHelper
             );
 
             $response = HttpRequestJson::post($config['AdminUrl'] . 'oauth/access_token', $data);
+
+            if (CurlRequest::$lastHttpCode >= 400) {
+                throw new SdkException("The shop is invalid or the authorization code has already been used.");
+            }
 
             return isset($response['access_token']) ? $response['access_token'] : null;
         } else {

@@ -1,10 +1,12 @@
 title: Collection
+
 options:
   delete: false
   changeTitle: false
   changeTemplate: false
   changeSlug: false
   changeStatus: false
+  
 sections:
   shopify:
     type: fields
