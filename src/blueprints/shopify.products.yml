@@ -14,7 +14,7 @@ columns:
       products:
         headline: Products
         type: pages
-        info: "CHF {{ page.shopifyPrice }}"
+        info: "{{ page.shopifyStatus.upper }} / CHF {{ page.shopifyPrice }}  "
         layout: cards
         status: listed
         image: 
@@ -25,16 +25,16 @@ columns:
         template: shopify.product
   - width: 1/3
     sections:
-      drafts:
-        headline: Drafts
-        type: pages
-        info: "CHF {{ page.shopifyPrice }}"
-        layout: list
-        sortable: false
-        status: unlisted
-        image: false
-        disabled: true
-        template: shopify.product
+      # drafts:
+      #   headline: Drafts
+      #   type: pages
+      #   info: "CHF {{ page.shopifyPrice }}"
+      #   layout: list
+      #   sortable: false
+      #   status: listed
+      #   image: false
+      #   disabled: true
+      #   template: shopify.product
       buttons:
         type: fields
         fields:

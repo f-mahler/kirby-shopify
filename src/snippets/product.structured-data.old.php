@@ -13,21 +13,40 @@
   <?php endif ?>
   "description": "<?= preg_replace('/\r|\n/','\n',trim(Escape::html(Str::unhtml($page->shopifyDescriptionHTML())))) ?>",
   "brand": {
-    "@type": "Brand",
+    "@type": "Thing",
     "name": "<?= $page->shopifyVendor()->escape() ?>"
   },
   <?php if ($page->shopifyVariants()->toStructure()->count()): ?>
     "offers": [
-      <?php $index = 1; foreach ($page->shopifyVariants()->toStructure() as $key => $variant): ?>{
+      <?php $index = 1; ?>
+      <?php foreach ($page->shopifyVariants()->toStructure() as $key => $variant): ?>
+        {
           "@type" : "Offer",
-          "name" : "<?= $variant->title()->escape() ?>",
           "availability" : "http://schema.org/<?= r($page->isAvailable(), 'InStock', 'OutOfStock') ?>",
           "itemCondition" : "http://schema.org/NewCondition",
           "price" : "<?= $variant->price() ?>",
           "priceCurrency" : "CHF",
-          "url" : "<?= $page->url() ?>?variant=<?= $variant->id() ?>"
+          "url" : "<?= $variant->url() ?>",
+          "itemOffered" :
+          {
+              "@type" : "Product",
+              "name" : "<?= $variant->title()->escape() ?>",
+              <?php if ($variant->sku()->isNotEmpty()): ?>
+                "sku": "<?= $variant->sku() ?>",
+              <?php endif ?>
+              <?php if ($variant->weight()): ?>
+                "weight": {
+                  "@type": "QuantitativeValue",
+                  <?php if ($variant->weight_unit()->isNotEmpty()): ?>
+                    "unitCode": "<?= $variant->weight_unit() ?>",
+                  <?php endif ?>
+                  "value": "<?= $variant->weight().r($variant->weight_unit()->isNotEmpty(), ' '.$variant->weight_unit()) ?>"
+                }
+              <?php endif ?>
+          }
         }<?= r($page->shopifyVariants()->toStructure()->count() != $index, ',') ?>
-      <?php $index++; endforeach ?>
+        <?php $index++ ?>
+      <?php endforeach ?>
     ]
   <?php endif ?>
 }

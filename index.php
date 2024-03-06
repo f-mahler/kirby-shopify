@@ -104,7 +104,7 @@ Kirby::plugin('tristanb/kirby-shopify', [
             return $inventory;
         },
         'isAvailable' => function () {
-            return $this->inventory_quantity() > 0;
+            return true;
         },
         'hasImages' => function () {
             return $this->shopifyImages()->toStructure()->count() > 0;
